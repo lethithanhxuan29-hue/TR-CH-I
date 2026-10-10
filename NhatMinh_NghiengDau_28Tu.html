@@ -1,0 +1,573 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiếng Trung Nhật Minh • Nghiêng đầu chọn chữ</title><style>
+:root{color-scheme:dark;--bg:#10142c;--panel:#1c2344;--gold:#ffd66b;--green:#55e6be}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#30325e,var(--bg) 65%);color:#f6f7ff;font:17px system-ui,sans-serif;min-height:100vh}main{max-width:1220px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;align-items:center;gap:12px}small,.sub{color:#b8c2e5}h1{font-size:clamp(28px,5vw,50px);margin:12px 0}h2{margin:12px 0}button,select,input,textarea{font:inherit;border-radius:13px;border:1px solid #596080;padding:12px;background:#252e50;color:white}button{cursor:pointer;font-weight:700}button:hover{background:#3b4877}button:disabled{opacity:.4;cursor:wait}.primary{background:var(--gold);color:#171d37;border:0}.panel{background:#1c2344e8;border:1px solid #434a70;border-radius:24px;padding:24px;margin:18px 0}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.hidden{display:none!important}#notice{padding:10px;color:#ffd66b;white-space:pre-wrap}.arena{display:grid;grid-template-columns:1fr 2fr 1fr;gap:18px;align-items:center}.choice{min-height:220px;text-align:center;display:flex;flex-direction:column;justify-content:center;position:relative;border:3px solid #68709d;border-radius:22px;background:linear-gradient(140deg,#303563,#1b2445)}.hanzi{font:clamp(38px,6vw,76px) 'Microsoft YaHei','Noto Sans CJK SC',sans-serif;word-break:break-word}.choice.focus{border-color:var(--gold);box-shadow:0 0 28px #ffd66b55}.choice.good{border-color:var(--green)}.choice.bad{border-color:#ff7796}.progress{height:9px;border-radius:8px;background:#373d60;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:var(--gold);width:0}#cameraBox{aspect-ratio:4/3;background:#0c1022;border:2px solid #636b90;border-radius:24px;overflow:hidden;position:relative;display:grid;place-items:center}video{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}#overlay{z-index:1;align-self:end;text-align:center;background:#11192cbb;padding:12px;width:100%}#prompt{text-align:center;font-size:clamp(24px,3vw,36px);margin:20px 0}#feedback{min-height:55px;text-align:center;color:var(--gold);font-size:22px}.toolbar{justify-content:center;margin-top:18px}dialog{width:min(850px,95vw);max-height:90vh;overflow:auto;color:white;background:#19213e;border:1px solid #7580a7;border-radius:24px;padding:24px}dialog::backdrop{background:#050916c9}label{display:block;margin:12px 0}label input,label select{margin-left:10px}textarea{width:100%;min-height:180px}#list{max-height:240px;overflow:auto}#list button{margin:4px}pre{white-space:pre-wrap}.trophy{text-align:center;font-size:70px}.stats{text-align:center;font-size:25px}.help{line-height:1.7}#meter{height:8px;background:var(--green);width:0}button:focus-visible{outline:3px solid var(--gold)}@media(max-width:700px){main{padding:12px}.arena{grid-template-columns:1fr 1fr}.arena #cameraBox{grid-column:1/3;grid-row:1;max-height:360px}.choice{min-height:150px}.grid{grid-template-columns:1fr}.panel{padding:18px}}
+</style></head><body><main><header><b>TIẾNG TRUNG NHẬT MINH</b><small>NGHIÊNG ĐẦU • CHỌN CHỮ</small></header><div id="notice" role="status"></div>
+<section id="home" class="panel"><small>HỌC VUI MỖI NGÀY</small><h1 id="title"></h1><p>Nhìn nghĩa tiếng Việt → chọn chữ Hán đúng. Giữ hướng đến khi thanh đầy, rồi về giữa trước câu tiếp theo.</p><div class="row"><select id="group" aria-label="Nhóm"></select><select id="count"><option value="all">Tất cả câu</option><option value="10">10 câu ngẫu nhiên</option></select><button class="primary" id="start">Bắt đầu chơi</button><button id="settingsHome">Cài đặt</button><button id="bankHome">Ngân hàng câu hỏi</button></div><p id="summary" class="sub"></p><details class="help"><summary>Hướng dẫn sử dụng</summary><p>Phím ← / → hoặc nhấn giữ ô đáp án; thả để hủy. Phím cách tạm dừng / tiếp tục. Với camera, bật camera, nhìn thẳng và bấm Hiệu chỉnh, sau đó chọn cách nhận nghiêng đầu hoặc dịch mặt. Về giữa để mở khóa câu tiếp theo.</p><p>Camera dùng MediaPipe từ CDN, cần Internet và quyền camera trên HTTPS/localhost hoặc trình duyệt cho phép file HTML. Nếu không tải được, vẫn chơi bằng phím/nút. Không gửi hình camera lên máy chủ; xử lý trên thiết bị. Hiệu chỉnh chỉ có trong phiên hiện tại.</p><p>Giáo viên mở Ngân hàng → chọn câu để sửa hoặc thêm → Lưu. Có thể nhập JSON và tải HTML đã cập nhật mang sang máy khác. Đóng/mở file luôn bắt đầu ở trang chủ.</p></details></section>
+<section id="game" class="hidden"><div class="row"><b id="score"></b><span id="position"></span><span id="state"></span></div><div class="progress"><i id="roundProgress"></i></div><h2 id="prompt"></h2><div class="arena"><button class="choice" id="left"><span class="hanzi"></span><small>← TRÁI</small><div class="progress"><i></i></div></button><div id="cameraBox"><video id="video" autoplay playsinline muted></video><div id="overlay">Chơi bằng phím hoặc nhấn giữ ô đáp án</div></div><button class="choice" id="right"><span class="hanzi"></span><small>PHẢI →</small><div class="progress"><i></i></div></button></div><div id="feedback" aria-live="polite"></div><div class="row toolbar"><button id="pause">Tạm dừng</button><button id="camera">Bật / đổi camera</button><button id="calibrate" disabled>Hiệu chỉnh nhanh</button><button id="settingsGame">Cài đặt</button><button id="bankGame">Ngân hàng</button><button id="goHome">Trang chủ</button></div></section>
+<section id="result" class="panel hidden"><div class="trophy">🏆</div><h1 id="resultTitle" style="text-align:center"></h1><p id="stats" class="stats"></p><div class="row toolbar"><button id="replay" class="primary">Chơi lại</button><button id="mistakesButton">Xem câu sai</button><button id="choose">Chọn nhóm/bộ</button><button id="resultHome">Trang chủ</button></div><div id="mistakes" class="hidden"></div></section>
+<dialog id="settings"><h2>Cài đặt cách chơi</h2><label>Cách chơi <select id="mode"><option value="keys">Phím / nút bấm</option><option value="camera">Camera</option></select></label><label>Cách nhận <select id="recognition"><option value="tilt">Nghiêng đầu</option><option value="move">Dịch mặt</option></select></label><label>Độ nhạy <input id="sensitivity" type="range" min="5" max="30" step="1"><output id="sensValue"></output></label><label>Thời gian giữ (ms) <input id="hold" type="number" min="300" max="3000" step="100"></label><label><input id="reverse" type="checkbox"> Đảo hướng trái / phải</label><label><input id="sound" type="checkbox"> Bật âm thanh</label><label>Âm lượng <input id="volume" type="range" min="0" max="1" step="0.05"></label><button id="saveSettings" class="primary">Lưu và đóng</button><button data-close>Đóng</button><p class="sub">Không lưu hình ảnh hoặc thông số hiệu chỉnh khuôn mặt.</p></dialog>
+<dialog id="bankEditor"><h2>Ngân hàng câu hỏi</h2><p id="bankMeta"></p><div class="row"><input id="search" placeholder="Tìm câu / chữ Hán"><button id="newQuestion">Thêm câu</button></div><div id="list"></div><div class="grid"><label>ID <input id="qid"></label><label>Nhóm (chọn / tạo) <input id="qgroup" list="groups"><datalist id="groups"></datalist></label></div><label>Câu hỏi <input id="qprompt" style="width:90%"></label><p>Hai lựa chọn: chữ Hán | pinyin | nghĩa tiếng Việt</p><input id="opt1" style="width:100%" placeholder="现在 | xiànzài | bây giờ"><input id="opt2" style="width:100%;margin-top:8px"><label>Chữ Hán đúng <input id="correct"></label><div class="row"><button id="saveQuestion" class="primary">Lưu câu</button><button id="deleteQuestion">Xóa câu</button></div><hr><textarea id="jsonInput" aria-label="Ngân hàng JSON" placeholder="Dán JSON đầy đủ metadata và questions"></textarea><div class="row"><button id="merge">Nhập thêm / cập nhật theo ID</button><button id="replace">Nhập thay toàn bộ</button><button id="exportJson">Xuất JSON</button><button id="exportHtml" class="primary">Tải HTML đã cập nhật</button><button data-close>Đóng</button></div><p id="editorStatus" role="status"></p></dialog>
+<dialog id="conflict"><h2>Dữ liệu lưu khác phiên bản</h2><p id="conflictText"></p><p>Chọn rõ nguồn muốn dùng. Dữ liệu lưu không được tự ghi đè bộ nhúng mới.</p><button id="useEmbedded">Dùng bộ nhúng</button><button id="useStored">Dùng bản đã chỉnh</button><button id="downloadStored">Tải bản đã chỉnh để giữ</button></dialog>
+<script id="bank" type="application/json">{
+  "setId": "nhatminh-hsk1-thoigian-28",
+  "level": "HSK1",
+  "title": "Giờ nào học tiếng Trung?",
+  "dataVersion": "2026-10-10.1",
+  "questions": [
+    {
+      "id": "q01",
+      "group": "Thời gian",
+      "prompt": "bây giờ",
+      "options": [
+        {
+          "hanzi": "现在",
+          "pinyin": "xiànzài",
+          "meaning": "bây giờ"
+        },
+        {
+          "hanzi": "半",
+          "pinyin": "bàn",
+          "meaning": "một nửa; rưỡi"
+        }
+      ],
+      "correct": "现在"
+    },
+    {
+      "id": "q02",
+      "group": "Thời gian",
+      "prompt": "giờ (chỉ giờ đồng hồ)",
+      "options": [
+        {
+          "hanzi": "点",
+          "pinyin": "diǎn",
+          "meaning": "giờ (chỉ giờ đồng hồ)"
+        },
+        {
+          "hanzi": "课",
+          "pinyin": "kè",
+          "meaning": "bài học; tiết học"
+        }
+      ],
+      "correct": "点"
+    },
+    {
+      "id": "q03",
+      "group": "Thời gian",
+      "prompt": "buổi sáng sớm",
+      "options": [
+        {
+          "hanzi": "早上",
+          "pinyin": "zǎoshang",
+          "meaning": "buổi sáng sớm"
+        },
+        {
+          "hanzi": "上课",
+          "pinyin": "shàngkè",
+          "meaning": "vào học; lên lớp"
+        }
+      ],
+      "correct": "早上"
+    },
+    {
+      "id": "q04",
+      "group": "Thời gian",
+      "prompt": "buổi sáng",
+      "options": [
+        {
+          "hanzi": "上午",
+          "pinyin": "shàngwǔ",
+          "meaning": "buổi sáng"
+        },
+        {
+          "hanzi": "下课",
+          "pinyin": "xiàkè",
+          "meaning": "tan học; hết tiết"
+        }
+      ],
+      "correct": "上午"
+    },
+    {
+      "id": "q05",
+      "group": "Thời gian",
+      "prompt": "buổi chiều",
+      "options": [
+        {
+          "hanzi": "下午",
+          "pinyin": "xiàwǔ",
+          "meaning": "buổi chiều"
+        },
+        {
+          "hanzi": "见",
+          "pinyin": "jiàn",
+          "meaning": "gặp"
+        }
+      ],
+      "correct": "下午"
+    },
+    {
+      "id": "q06",
+      "group": "Thời gian",
+      "prompt": "buổi tối",
+      "options": [
+        {
+          "hanzi": "晚上",
+          "pinyin": "wǎnshang",
+          "meaning": "buổi tối"
+        },
+        {
+          "hanzi": "吧",
+          "pinyin": "ba",
+          "meaning": "nhé; đi (trợ từ)"
+        }
+      ],
+      "correct": "晚上"
+    },
+    {
+      "id": "q07",
+      "group": "Thời gian",
+      "prompt": "phút (khi nói giờ)",
+      "options": [
+        {
+          "hanzi": "分",
+          "pinyin": "fēn",
+          "meaning": "phút (khi nói giờ)"
+        },
+        {
+          "hanzi": "电影",
+          "pinyin": "diànyǐng",
+          "meaning": "phim"
+        }
+      ],
+      "correct": "分"
+    },
+    {
+      "id": "q08",
+      "group": "Thời gian",
+      "prompt": "một nửa; rưỡi",
+      "options": [
+        {
+          "hanzi": "半",
+          "pinyin": "bàn",
+          "meaning": "một nửa; rưỡi"
+        },
+        {
+          "hanzi": "电影院",
+          "pinyin": "diànyǐngyuàn",
+          "meaning": "rạp chiếu phim"
+        }
+      ],
+      "correct": "半"
+    },
+    {
+      "id": "q09",
+      "group": "Học tập",
+      "prompt": "bài học; tiết học",
+      "options": [
+        {
+          "hanzi": "课",
+          "pinyin": "kè",
+          "meaning": "bài học; tiết học"
+        },
+        {
+          "hanzi": "事",
+          "pinyin": "shì",
+          "meaning": "việc; chuyện"
+        }
+      ],
+      "correct": "课"
+    },
+    {
+      "id": "q10",
+      "group": "Học tập",
+      "prompt": "vào học; lên lớp",
+      "options": [
+        {
+          "hanzi": "上课",
+          "pinyin": "shàngkè",
+          "meaning": "vào học; lên lớp"
+        },
+        {
+          "hanzi": "呢",
+          "pinyin": "ne",
+          "meaning": "trợ từ hỏi tiếp hoặc biểu thị tiếp diễn"
+        }
+      ],
+      "correct": "上课"
+    },
+    {
+      "id": "q11",
+      "group": "Học tập",
+      "prompt": "tan học; hết tiết",
+      "options": [
+        {
+          "hanzi": "下课",
+          "pinyin": "xiàkè",
+          "meaning": "tan học; hết tiết"
+        },
+        {
+          "hanzi": "看",
+          "pinyin": "kàn",
+          "meaning": "xem; nhìn"
+        }
+      ],
+      "correct": "下课"
+    },
+    {
+      "id": "q12",
+      "group": "Sinh hoạt",
+      "prompt": "gặp",
+      "options": [
+        {
+          "hanzi": "见",
+          "pinyin": "jiàn",
+          "meaning": "gặp"
+        },
+        {
+          "hanzi": "在",
+          "pinyin": "zài",
+          "meaning": "ở; đang"
+        }
+      ],
+      "correct": "见"
+    },
+    {
+      "id": "q13",
+      "group": "Sinh hoạt",
+      "prompt": "nhé; đi (trợ từ)",
+      "options": [
+        {
+          "hanzi": "吧",
+          "pinyin": "ba",
+          "meaning": "nhé; đi (trợ từ)"
+        },
+        {
+          "hanzi": "家",
+          "pinyin": "jiā",
+          "meaning": "nhà; gia đình"
+        }
+      ],
+      "correct": "吧"
+    },
+    {
+      "id": "q14",
+      "group": "Sinh hoạt",
+      "prompt": "phim",
+      "options": [
+        {
+          "hanzi": "电影",
+          "pinyin": "diànyǐng",
+          "meaning": "phim"
+        },
+        {
+          "hanzi": "里",
+          "pinyin": "lǐ",
+          "meaning": "bên trong"
+        }
+      ],
+      "correct": "电影"
+    },
+    {
+      "id": "q15",
+      "group": "Địa điểm",
+      "prompt": "rạp chiếu phim",
+      "options": [
+        {
+          "hanzi": "电影院",
+          "pinyin": "diànyǐngyuàn",
+          "meaning": "rạp chiếu phim"
+        },
+        {
+          "hanzi": "医院",
+          "pinyin": "yīyuàn",
+          "meaning": "bệnh viện"
+        }
+      ],
+      "correct": "电影院"
+    },
+    {
+      "id": "q16",
+      "group": "Sinh hoạt",
+      "prompt": "việc; chuyện",
+      "options": [
+        {
+          "hanzi": "事",
+          "pinyin": "shì",
+          "meaning": "việc; chuyện"
+        },
+        {
+          "hanzi": "上班",
+          "pinyin": "shàngbān",
+          "meaning": "đi làm; vào ca"
+        }
+      ],
+      "correct": "事"
+    },
+    {
+      "id": "q17",
+      "group": "Sinh hoạt",
+      "prompt": "trợ từ hỏi tiếp hoặc biểu thị tiếp diễn",
+      "options": [
+        {
+          "hanzi": "呢",
+          "pinyin": "ne",
+          "meaning": "trợ từ hỏi tiếp hoặc biểu thị tiếp diễn"
+        },
+        {
+          "hanzi": "下班",
+          "pinyin": "xiàbān",
+          "meaning": "tan làm"
+        }
+      ],
+      "correct": "呢"
+    },
+    {
+      "id": "q18",
+      "group": "Sinh hoạt",
+      "prompt": "xem; nhìn",
+      "options": [
+        {
+          "hanzi": "看",
+          "pinyin": "kàn",
+          "meaning": "xem; nhìn"
+        },
+        {
+          "hanzi": "店",
+          "pinyin": "diàn",
+          "meaning": "cửa hàng"
+        }
+      ],
+      "correct": "看"
+    },
+    {
+      "id": "q19",
+      "group": "Sinh hoạt",
+      "prompt": "ở; đang",
+      "options": [
+        {
+          "hanzi": "在",
+          "pinyin": "zài",
+          "meaning": "ở; đang"
+        },
+        {
+          "hanzi": "菜",
+          "pinyin": "cài",
+          "meaning": "rau; món ăn"
+        }
+      ],
+      "correct": "在"
+    },
+    {
+      "id": "q20",
+      "group": "Địa điểm",
+      "prompt": "nhà; gia đình",
+      "options": [
+        {
+          "hanzi": "家",
+          "pinyin": "jiā",
+          "meaning": "nhà; gia đình"
+        },
+        {
+          "hanzi": "分钟",
+          "pinyin": "fēnzhōng",
+          "meaning": "phút (khoảng thời gian)"
+        }
+      ],
+      "correct": "家"
+    },
+    {
+      "id": "q21",
+      "group": "Địa điểm",
+      "prompt": "bên trong",
+      "options": [
+        {
+          "hanzi": "里",
+          "pinyin": "lǐ",
+          "meaning": "bên trong"
+        },
+        {
+          "hanzi": "后",
+          "pinyin": "hòu",
+          "meaning": "sau; phía sau"
+        }
+      ],
+      "correct": "里"
+    },
+    {
+      "id": "q22",
+      "group": "Địa điểm",
+      "prompt": "bệnh viện",
+      "options": [
+        {
+          "hanzi": "医院",
+          "pinyin": "yīyuàn",
+          "meaning": "bệnh viện"
+        },
+        {
+          "hanzi": "现在",
+          "pinyin": "xiànzài",
+          "meaning": "bây giờ"
+        }
+      ],
+      "correct": "医院"
+    },
+    {
+      "id": "q23",
+      "group": "Sinh hoạt",
+      "prompt": "đi làm; vào ca",
+      "options": [
+        {
+          "hanzi": "上班",
+          "pinyin": "shàngbān",
+          "meaning": "đi làm; vào ca"
+        },
+        {
+          "hanzi": "点",
+          "pinyin": "diǎn",
+          "meaning": "giờ (chỉ giờ đồng hồ)"
+        }
+      ],
+      "correct": "上班"
+    },
+    {
+      "id": "q24",
+      "group": "Sinh hoạt",
+      "prompt": "tan làm",
+      "options": [
+        {
+          "hanzi": "下班",
+          "pinyin": "xiàbān",
+          "meaning": "tan làm"
+        },
+        {
+          "hanzi": "早上",
+          "pinyin": "zǎoshang",
+          "meaning": "buổi sáng sớm"
+        }
+      ],
+      "correct": "下班"
+    },
+    {
+      "id": "q25",
+      "group": "Địa điểm",
+      "prompt": "cửa hàng",
+      "options": [
+        {
+          "hanzi": "店",
+          "pinyin": "diàn",
+          "meaning": "cửa hàng"
+        },
+        {
+          "hanzi": "上午",
+          "pinyin": "shàngwǔ",
+          "meaning": "buổi sáng"
+        }
+      ],
+      "correct": "店"
+    },
+    {
+      "id": "q26",
+      "group": "Sinh hoạt",
+      "prompt": "rau; món ăn",
+      "options": [
+        {
+          "hanzi": "菜",
+          "pinyin": "cài",
+          "meaning": "rau; món ăn"
+        },
+        {
+          "hanzi": "下午",
+          "pinyin": "xiàwǔ",
+          "meaning": "buổi chiều"
+        }
+      ],
+      "correct": "菜"
+    },
+    {
+      "id": "q27",
+      "group": "Thời gian",
+      "prompt": "phút (khoảng thời gian)",
+      "options": [
+        {
+          "hanzi": "分钟",
+          "pinyin": "fēnzhōng",
+          "meaning": "phút (khoảng thời gian)"
+        },
+        {
+          "hanzi": "晚上",
+          "pinyin": "wǎnshang",
+          "meaning": "buổi tối"
+        }
+      ],
+      "correct": "分钟"
+    },
+    {
+      "id": "q28",
+      "group": "Thời gian",
+      "prompt": "sau; phía sau",
+      "options": [
+        {
+          "hanzi": "后",
+          "pinyin": "hòu",
+          "meaning": "sau; phía sau"
+        },
+        {
+          "hanzi": "分",
+          "pinyin": "fēn",
+          "meaning": "phút (khi nói giờ)"
+        }
+      ],
+      "correct": "后"
+    }
+  ]
+}</script><script>
+'use strict';
+const $=id=>document.getElementById(id),clone=x=>JSON.parse(JSON.stringify(x)),embedded=JSON.parse($('bank').textContent);let bank=clone(embedded),pendingStored=null;
+const template=document.documentElement.outerHTML;const defaults={sensitivity:12,hold:900,recognition:'tilt',reverse:false,sound:true,volume:.6,mode:'keys'};let prefs={...defaults};
+function key(suffix,b=bank){return 'nm-facequiz:v2:'+encodeURIComponent(b.setId)+':'+encodeURIComponent(b.level)+':'+suffix}
+function notice(s){$('notice').textContent=s}
+function read(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){notice('Trình duyệt chặn lưu dữ liệu. Vẫn chơi được; chỉnh sửa chưa được lưu.');return null}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){notice('Chỉnh sửa chưa được lưu. Hãy tải JSON hoặc HTML cập nhật để giữ lại.');return false}}
+function validate(b){if(!b||['setId','level','title','dataVersion'].some(k=>typeof b[k]!=='string'||!b[k].trim())||!Array.isArray(b.questions)||!b.questions.length)throw Error('Thiếu metadata hoặc ngân hàng trống.');const ids=new Set(),dictionary=new Map();for(const q of b.questions){if(!q||['id','group','prompt','correct'].some(k=>typeof q[k]!=='string'||!q[k].trim())||ids.has(q.id))throw Error('ID trùng hoặc câu thiếu dữ liệu.');ids.add(q.id);if(!Array.isArray(q.options)||q.options.length!==2||q.options.some(o=>!o||['hanzi','pinyin','meaning'].some(k=>typeof o[k]!=='string'||!o[k].trim())))throw Error('Mỗi câu cần hai đáp án đầy đủ.');if(q.options[0].hanzi===q.options[1].hanzi||q.options.filter(o=>o.hanzi===q.correct).length!==1)throw Error('Cần hai chữ Hán khác nhau và đúng một đáp án đúng.');for(const o of q.options){const text=o.pinyin+'|'+o.meaning;if(dictionary.has(o.hanzi)&&dictionary.get(o.hanzi)!==text)throw Error('Pinyin / nghĩa không nhất quán: '+o.hanzi);dictionary.set(o.hanzi,text)}}return true}
+function refresh(){document.title=bank.title+' • Nhật Minh';$('title').textContent=bank.title;const g=$('group').value;const groups=[...new Set(bank.questions.map(q=>q.group))];$('group').replaceChildren(new Option('Tất cả nhóm','all'),...groups.map(v=>new Option(v,v)));if([...$('group').options].some(o=>o.value===g))$('group').value=g;$('groups').replaceChildren(...groups.map(v=>new Option(v,v)));$('summary').textContent=bank.level+' • '+new Set(bank.questions.map(q=>q.correct)).size+' chữ Hán • '+bank.questions.length+' câu • Đúng +10 điểm';$('bankMeta').textContent=bank.setId+' / '+bank.level+' / '+bank.dataVersion;renderList()}
+function loadPrefs(){const p=read(key('settings'));prefs={...defaults,...p};prefs.hold=Math.max(300,Math.min(3000,+prefs.hold||900));prefs.sensitivity=Math.max(5,Math.min(30,+prefs.sensitivity||12));prefs.volume=Math.max(0,Math.min(1,+prefs.volume||0));}
+validate(bank);loadPrefs();const saved=read(key('bank'));if(saved){try{validate(saved.bank);if(saved.baseVersion===embedded.dataVersion){bank=saved.bank;loadPrefs()}else{pendingStored=saved.bank;$('conflictText').textContent='Bộ nhúng: '+embedded.dataVersion+'; bản lưu dựa trên: '+saved.baseVersion;$('conflict').showModal()}}catch(e){notice('Bản lưu không hợp lệ. Dùng bộ nhúng: '+e.message)}}
+function persist(){return write(key('bank'),{baseVersion:embedded.dataVersion,bank})}
+function safeJson(b){return JSON.stringify(b,null,2).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')}
+function download(data,name,type){const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exported(){validate(bank);const b=clone(bank);b.dataVersion=Date.now().toString()+'-'+Math.random().toString(36).slice(2,7);return '<!doctype html>\n'+template.replace(/(<script id="bank" type="application\/json">)[\s\S]*?(<\/script>)/,(_,a,z)=>a+safeJson(b)+z)}
+$('useEmbedded').onclick=()=>{write(key('bank'),{baseVersion:embedded.dataVersion,bank:embedded});$('conflict').close()};$('useStored').onclick=()=>{bank=clone(pendingStored);loadPrefs();persist();refresh();$('conflict').close()};$('downloadStored').onclick=()=>download(safeJson(pendingStored),'ban-chinh-cu.json','application/json');
+let run=null,status='home',direction=null,holdStart=0,lastSample=0,armed=false,neutralSince=0,releaseAt=0,modalResume=false,modalStatus=null,pausedFrom='playing';let stream=null,landmarker=null,cameraLoading=false,cameraReady=false,baseline=null,lastVideoTime=-1,faceAt=0;
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function resetHold(){direction=null;holdStart=0;lastSample=0;for(const id of ['left','right']){$(id).classList.remove('focus');$(id).querySelector('i').style.width='0%'}}
+function setStatus(s){status=s;resetHold();$('state').textContent=s==='playing'?'Đang chơi':s==='paused'?'Đã tạm dừng':s==='feedback'?'Về giữa để tiếp tục':'';$('pause').textContent=s==='paused'?'Tiếp tục':'Tạm dừng'}
+function show(name){for(const id of ['home','game','result'])$(id).classList.toggle('hidden',id!==name)}
+function start(){let list=bank.questions.filter(q=>$('group').value==='all'||q.group===$('group').value);if(!list.length)return notice('Nhóm không có câu.');list=shuffle(list);if($('count').value==='10')list=list.slice(0,10);run={questions:clone(list),index:0,points:0,right:0,streak:0,best:0,wrong:[],choices:[]};armed=false;neutralSince=0;show('game');setStatus('playing');next();tone('start')}
+function next(){if(run.index>=run.questions.length)return finish();run.choices=shuffle(run.questions[run.index].options);$('prompt').textContent=run.questions[run.index].prompt;['left','right'].forEach((id,i)=>{$(id).querySelector('.hanzi').textContent=run.choices[i].hanzi;$(id).classList.remove('good','bad')});$('score').textContent='⭐ '+run.points+' điểm';$('position').textContent='Câu '+(run.index+1)+' / '+run.questions.length;$('roundProgress').style.width=run.index/run.questions.length*100+'%';$('feedback').textContent='Về giữa / thả phím hoặc nút để sẵn sàng.';resetHold()}
+function answer(side,now){if(status!=='playing'||!armed||!run)return;let q=run.questions[run.index],o=run.choices[side==='left'?0:1],ok=o.hanzi===q.correct;setStatus('feedback');armed=false;neutralSince=0;releaseAt=now+1100;$(side).classList.add(ok?'good':'bad');if(ok){run.points+=10;run.right++;run.streak++;run.best=Math.max(run.best,run.streak)}else{run.streak=0;run.wrong.push({question:clone(q),chosen:clone(o)})}let correct=q.options.find(o=>o.hanzi===q.correct);$('feedback').textContent=(ok?'✨ Chính xác! +10':'💡 Đáp án: '+correct.hanzi)+' — '+correct.pinyin+' — '+correct.meaning;tone(ok?'good':'bad')}
+function sample(side,now){if(status!=='playing')return resetHold();if(lastSample&&now-lastSample>200){resetHold();armed=false;neutralSince=0}lastSample=now;if(!side){resetHold();lastSample=now;if(!neutralSince)neutralSince=now;if(now-neutralSince>=250){armed=true;$('feedback').textContent='Giữ hướng để chọn đáp án';}return}neutralSince=0;if(!armed)return;if(direction!==side){resetHold();direction=side;holdStart=now;lastSample=now}$(side).classList.add('focus');const p=Math.min(1,(now-holdStart)/prefs.hold);$(side).querySelector('i').style.width=p*100+'%';if(p>=1)answer(side,now)}
+function pause(){if(status==='playing'||status==='feedback'){pausedFrom=status;setStatus('paused');armed=false;neutralSince=0}else if(status==='paused'){setStatus(pausedFrom==='feedback'?'feedback':'playing');if(status==='feedback')releaseAt=performance.now()+700;armed=false;neutralSince=0}}
+function openDialog(id){modalResume=status==='playing'||status==='feedback';modalStatus=status;if(modalResume)setStatus('paused');resetHold();$(id).showModal()}
+for(const id of ['settings','bankEditor'])$(id).addEventListener('close',()=>{if(modalResume&&status==='paused'&&!document.hidden){setStatus(modalStatus);if(status==='feedback')releaseAt=performance.now()+700;armed=false;neutralSince=0}modalResume=false});document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+document.addEventListener('visibilitychange',()=>{if(document.hidden){modalResume=false;if(status==='playing'||status==='feedback'){pausedFrom=status;setStatus('paused')}keys.clear();pointer=null;armed=false;neutralSince=0}});window.addEventListener('blur',()=>{keys.clear();pointer=null;resetHold();armed=false;neutralSince=0});
+let audioContext=null;function tone(kind){if(!prefs.sound||prefs.volume<=0)return;try{audioContext??=new(window.AudioContext||window.webkitAudioContext)();audioContext.resume();const notes=kind==='good'?[523,659,784]:kind==='bad'?[220,164]:[330,440,660];notes.forEach((freq,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),t=audioContext.currentTime+i*.1;o.frequency.value=freq;o.type='triangle';g.gain.setValueAtTime(prefs.volume*.16,t);g.gain.exponentialRampToValueAtTime(.001,t+.16);o.connect(g).connect(audioContext.destination);o.start(t);o.stop(t+.17)})}catch(e){}}
+function finish(){setStatus('result');show('result');stopCamera();let total=run.questions.length,ratio=run.right/total;$('resultTitle').textContent=ratio>=.9?'Xuất sắc!':ratio>=.7?'Làm tốt lắm!':'Tiếp tục luyện tập nhé!';$('stats').textContent=run.points+' / '+total*10+' điểm • '+total+' câu • Đúng '+run.right+' • Sai '+(total-run.right)+' • Chính xác '+Math.round(ratio*100)+'% • Chuỗi đúng dài nhất '+run.best;$('mistakes').replaceChildren();for(const w of run.wrong){const d=document.createElement('div');d.className='panel';let o=w.question.options.find(o=>o.hanzi===w.question.correct);d.textContent=w.question.prompt+' | Đã chọn: '+w.chosen.hanzi+' | Đúng: '+o.hanzi+' — '+o.pinyin+' — '+o.meaning;$('mistakes').append(d)}if(!run.wrong.length)$('mistakes').textContent='Không có câu sai!';$('mistakes').classList.add('hidden');tone('good')}
+function home(){setStatus('home');show('home');stopCamera();baseline=null;run=null}
+const keys=new Set();let pointer=null;document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(['ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key===' '&&!e.repeat)pause();if(e.key==='ArrowLeft'||e.key==='ArrowRight')keys.add(e.key)});document.addEventListener('keyup',e=>keys.delete(e.key));for(const id of ['left','right']){$(id).addEventListener('pointerdown',e=>{if(status!=='playing'||cameraLoading)return;$(id).setPointerCapture(e.pointerId);pointer=id});for(const ev of ['pointerup','pointercancel','lostpointercapture'])$(id).addEventListener(ev,()=>{pointer=null;resetHold()})}
+function syncLoading(){for(const id of ['camera','calibrate','left','right','pause','goHome','settingsGame','bankGame'])$(id).disabled=cameraLoading||(id==='calibrate'&&!cameraReady)}
+function stopCamera(){stream?.getTracks().forEach(t=>t.stop());stream=null;cameraReady=false;baseline=null;$('video').srcObject=null;syncLoading()}
+async function enableCamera(){if(cameraLoading)return;const resume=status==='playing'||status==='feedback',before=status;if(resume)setStatus('paused');cameraLoading=true;syncLoading();let newStream=null;try{if(!navigator.mediaDevices?.getUserMedia)throw Error('Trình duyệt chưa cho phép camera ở địa chỉ này.');const devices=await navigator.mediaDevices.enumerateDevices(),cams=devices.filter(d=>d.kind==='videoinput'),current=stream?.getVideoTracks()[0]?.getSettings().deviceId;let idx=cams.findIndex(d=>d.deviceId===current),device=cams[(idx+1)%Math.max(cams.length,1)];newStream=await navigator.mediaDevices.getUserMedia({video:device?.deviceId?{deviceId:{exact:device.deviceId}}:{facingMode:'user'},audio:false});if(!landmarker){const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs');const files=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');landmarker=await mp.FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},runningMode:'VIDEO',numFaces:1})}stream?.getTracks().forEach(t=>t.stop());stream=newStream;$('video').srcObject=stream;await $('video').play();cameraReady=true;baseline=null;lastVideoTime=-1;prefs.mode='camera';write(key('settings'),prefs);$('overlay').textContent='Nhìn thẳng rồi bấm Hiệu chỉnh nhanh';stream.getVideoTracks()[0].onended=()=>cameraFailure('Camera đã ngắt. Chuyển sang phím / nút.');}catch(e){newStream?.getTracks().forEach(t=>t.stop());cameraFailure('Không mở được camera: '+e.message+' Dùng phím / nút để tiếp tục.')}finally{cameraLoading=false;syncLoading();if(resume&&status==='paused'&&!document.hidden){setStatus(before);if(before==='feedback')releaseAt=performance.now()+700}armed=false;neutralSince=0}}
+function cameraFailure(s){cameraReady=false;prefs.mode='keys';baseline=null;notice(s);$('overlay').textContent='Chơi bằng phím hoặc nút';resetHold();armed=false;syncLoading()}
+let currentPose=null;function getPose(l){const a=l[33],b=l[263],n=l[1];return {tilt:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,move:n.x}}
+$('calibrate').onclick=()=>{if(!cameraReady||!currentPose||performance.now()-faceAt>200)return notice('Chưa thấy rõ khuôn mặt. Nhìn thẳng vào camera.');baseline={...currentPose};resetHold();armed=false;neutralSince=0;$('overlay').textContent='Đã hiệu chỉnh • về giữa rồi chọn';};
+function loop(now){if(status==='feedback'&&now>=releaseAt){run.index++;setStatus('playing');next()}if(status==='playing'&&!document.hidden&&!cameraLoading){if(prefs.mode==='camera'){if(cameraReady&&$('video').readyState>=2&&$('video').currentTime!==lastVideoTime){lastVideoTime=$('video').currentTime;let began=performance.now();try{const r=landmarker.detectForVideo($('video'),now);const elapsed=performance.now()-began;if(elapsed>200||!r.faceLandmarks.length){resetHold();armed=false;neutralSince=0;currentPose=null;$('overlay').textContent=elapsed>200?'Nhận diện chậm • về giữa lại':'Không thấy mặt • chưa chọn';}else{currentPose=getPose(r.faceLandmarks[0]);faceAt=performance.now();if(baseline){const v=prefs.recognition==='tilt'?currentPose.tilt-baseline.tilt:(baseline.move-currentPose.move)*100;const d=Math.abs(v)<prefs.sensitivity*.65?null:Math.abs(v)>=prefs.sensitivity?(v<0?'left':'right'):'dead';if(d==='dead'){resetHold();neutralSince=0}else sample(prefs.reverse&&d?(d==='left'?'right':'left'):d,faceAt);$('overlay').textContent=d==='left'?'← Trái':d==='right'?'Phải →':'Ở giữa';}}}catch(e){cameraFailure('Lỗi nhận diện. Chuyển sang phím / nút.')}}else if(performance.now()-faceAt>200){resetHold();armed=false;neutralSince=0}}else{let d=pointer|| (keys.size===1?(keys.has('ArrowLeft')?'left':'right'):null);sample(d,now)}}requestAnimationFrame(loop)}
+function settings(){for(const k of Object.keys(defaults)){if(typeof defaults[k]==='boolean')$(k).checked=prefs[k];else $(k).value=prefs[k]}$('sensValue').textContent=prefs.sensitivity;openDialog('settings')}$('sensitivity').oninput=()=>{$('sensValue').textContent=$('sensitivity').value};$('saveSettings').onclick=()=>{for(const k of Object.keys(defaults))prefs[k]=typeof defaults[k]==='boolean'?$(k).checked:typeof defaults[k]==='number'?Number($(k).value):$(k).value;prefs.hold=Math.max(300,Math.min(3000,prefs.hold||900));write(key('settings'),prefs);if(!prefs.sound||prefs.volume===0){audioContext?.close();audioContext=null}if(prefs.mode==='keys')stopCamera();baseline=null;resetHold();$('settings').close()};
+function renderList(){let s=$('search').value.toLowerCase();$('list').replaceChildren();for(const q of bank.questions.filter(q=>JSON.stringify(q).toLowerCase().includes(s))){let b=document.createElement('button');b.textContent=q.id+' · '+q.correct+' · '+q.group;b.onclick=()=>edit(q);$('list').append(b)}}
+function edit(q){$('qid').value=q?.id||'';$('qgroup').value=q?.group||'';$('qprompt').value=q?.prompt||'';$('correct').value=q?.correct||'';['opt1','opt2'].forEach((id,i)=>$(id).value=q?q.options[i].hanzi+' | '+q.options[i].pinyin+' | '+q.options[i].meaning:'');$('qid').dataset.original=q?.id||''}
+function commit(b){validate(b);bank=b;const saved=persist();refresh();$('editorStatus').textContent=saved?'Đã lưu trong trình duyệt.':'Chỉnh sửa chưa được lưu; hãy tải HTML / JSON.'}
+function guarded(fn){try{fn()}catch(e){$('editorStatus').textContent=e.message}}
+$('saveQuestion').onclick=()=>guarded(()=>{let b=clone(bank);const original=$('qid').dataset.original,q={id:$('qid').value.trim(),group:$('qgroup').value.trim(),prompt:$('qprompt').value.trim(),correct:$('correct').value.trim(),options:['opt1','opt2'].map(id=>{let a=$(id).value.split('|').map(v=>v.trim());if(a.length!==3)throw Error('Dùng đúng ba phần, phân cách bằng |');return{hanzi:a[0],pinyin:a[1],meaning:a[2]}})};if(q.id!==original&&b.questions.some(x=>x.id===q.id))throw Error('ID đã có.');let i=b.questions.findIndex(x=>x.id===original);if(i<0)b.questions.push(q);else b.questions[i]=q;commit(b);edit(q)});
+$('deleteQuestion').onclick=()=>guarded(()=>{const id=$('qid').dataset.original;if(!id)return;if(!confirm('Xóa câu '+id+'?'))return;let b=clone(bank);b.questions=b.questions.filter(q=>q.id!==id);commit(b);edit(null)});
+function importBank(replace){guarded(()=>{let incoming=JSON.parse($('jsonInput').value);validate(incoming);let b;if(replace){if(!confirm('Thay toàn bộ ngân hàng?'))return;b=incoming}else{if(incoming.setId!==bank.setId||incoming.level!==bank.level)throw Error('Mã bộ / cấp độ khác. Chọn thay toàn bộ để đổi bộ.');b=clone(bank);let map=new Map(b.questions.map(q=>[q.id,q]));incoming.questions.forEach(q=>map.set(q.id,q));b.questions=[...map.values()]}commit(b);loadPrefs();edit(null)})}
+$('merge').onclick=()=>importBank(false);$('replace').onclick=()=>importBank(true);$('exportJson').onclick=()=>download(safeJson(bank),bank.setId+'.json','application/json');$('exportHtml').onclick=()=>guarded(()=>download(exported(),bank.setId+'-cap-nhat.html','text/html'));$('search').oninput=renderList;$('newQuestion').onclick=()=>edit(null);
+$('start').onclick=start;$('pause').onclick=pause;$('camera').onclick=enableCamera;['settingsHome','settingsGame'].forEach(id=>$(id).onclick=settings);['bankHome','bankGame'].forEach(id=>$(id).onclick=()=>openDialog('bankEditor'));['goHome','choose','resultHome'].forEach(id=>$(id).onclick=home);$('replay').onclick=start;$('mistakesButton').onclick=()=>$('mistakes').classList.toggle('hidden');
+window.NMTest={validate,shuffle,safeJson,exported,sample,answer,start,pause,getBank:()=>clone(bank),getRun:()=>clone(run),getStatus:()=>status,setPrefs:p=>Object.assign(prefs,p),setArmed:v=>armed=v};refresh();requestAnimationFrame(loop);
+</script></main></body></html>
